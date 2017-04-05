@@ -1,0 +1,18 @@
+﻿<script>
+function check(){
+    var str = document.getElementById("f_file").value;
+    if(str.length==0)
+    {
+        alert("请选择上传文件后再提交");
+        return false;
+    }
+    return true;
+}
+</script>
+<form onsubmit="return check()" method="post" action="/action/upFirmware" enctype="multipart/form-data">
+<input type="text" class="file" id="f_file"><input type="button" 
+value="选择上传文件" class="file" onClick="t_file.click()"> 
+<input name="upload" type="file" id="t_file" 
+onchange="f_file.value=this.value" style="display:none"> 
+<input type="submit" value="提交"/>
+</form>

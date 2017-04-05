@@ -1,0 +1,53 @@
+#!/bin/sh
+echo "S90hibernate start"
+ulimit -s 1024
+##format sd.add by lilin 20160913
+formatsdflag="/home/formatsd"
+echo $formatsdflag
+
+if [ -f "$formatsdflag" ]; then
+	/sbin/mkfs.vfat /dev/mmcblk0p1
+	rm -f /home/formatsd
+fi
+rm -f /home/formatsd
+######################################
+
+###添加系统备份分区.
+rm -rf /mnt/cfg
+mkdir -p /mnt/cfg
+cfgbakfile="/mnt/cfg/cdr_syscfg.xml"
+mount -t jffs2 /dev/mtdblock2 /mnt/cfg
+
+if [ -f "$cfgbakfile" ]; then
+	echo "update cfg to home"
+	cp -f /mnt/cfg/cdr_syscfg.xml /home/cdr_syscfg.xml
+else
+	echo "update home to cfg"
+	cp -f /home/cdr_syscfg.xml /mnt/cfg/cdr_syscfg.xml
+fi
+
+###rm dir.
+rm /mnt/mmc -rf
+mkdir -p /mnt/mmc
+mount /dev/mmcblk0p1 /mnt/mmc
+mount -oremount,rw /mnt/mmc
+mkdir -p /mnt/mmc/tmp/
+
+factoryfileflag="/mnt/mmc/cdrfcimage/cdr_factory_file.bin"
+if [ ! -f "$factoryfileflag" ]; then
+	rm -rf /mnt/mmc/cdrfcimage
+else
+	echo $factoryfileflag
+fi
+
+cd /ko
+./load3516cv200 -i -sensor mn34222 -osmem 160 -total 256
+
+#播放开机音乐cdr_bootvoice
+/home/cdr_bootvoice
+
+mkdir -p /app/
+mount system /app/ -t tmpfs -o size=10M
+tar xvzf /home/app.tar.gz -C /
+
+/app/start.sh
