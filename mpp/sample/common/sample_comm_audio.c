@@ -17,12 +17,6 @@
 #include <errno.h>
 #include <signal.h>
 
-#include "audio_aac_adp.h"
-
-#include "../svntest/cdr_config/cdr_config.h"
-
-//#include "cdr_config.h"
-
 #include "sample_comm.h"
 #include "acodec.h"
 #ifdef HI_ACODEC_TYPE_TLV320AIC31
@@ -35,12 +29,10 @@ extern "C"{
 #endif
 #endif /* End of #ifdef __cplusplus */
 
+#define ACODEC_FILE     "/dev/acodec"
 
 #define AUDIO_ADPCM_TYPE ADPCM_TYPE_DVI4/* ADPCM_TYPE_IMA, ADPCM_TYPE_DVI4*/
 #define G726_BPS MEDIA_G726_40K         /* MEDIA_G726_16K, MEDIA_G726_24K ... */
-
-static AAC_TYPE_E gs_enAacType = AAC_TYPE_AACLC; 
-static AAC_BPS_E gs_enAacBps = AAC_BPS_16K;
 
 typedef struct tagSAMPLE_AENC_S
 {
@@ -329,7 +321,7 @@ HI_S32 SAMPLE_INNER_CODEC_CfgAudio(AUDIO_SAMPLE_RATE_E enSample)
     HI_S32 fdAcodec = -1;
     HI_S32 ret = HI_SUCCESS;
     ACODEC_FS_E i2s_fs_sel = 0;
-    //int iAcodecInputVol = 0;
+    int iAcodecInputVol = 0;
     ACODEC_MIXER_E input_mode = 0;
 
     fdAcodec = open(ACODEC_FILE, O_RDWR);
@@ -402,71 +394,35 @@ HI_S32 SAMPLE_INNER_CODEC_CfgAudio(AUDIO_SAMPLE_RATE_E enSample)
     }
 
     //select IN or IN_Difference
-    //差分方式输入.
-    input_mode = ACODEC_MIXER_IN_D;
+    input_mode = ACODEC_MIXER_IN;
     if (ioctl(fdAcodec, ACODEC_SET_MIXER_MIC, &input_mode)) 
     {
         printf("%s: select acodec input_mode failed\n", __FUNCTION__);
         ret = HI_FAILURE;
     }
+    
+    
+    if (0) /* should be 1 when micin */
+    {
+        /******************************************************************************************
+        The input volume range is [-87, +86]. Both the analog gain and digital gain are adjusted.
+        A larger value indicates higher volume.
+        For example, the value 86 indicates the maximum volume of 86 dB,
+        and the value -87 indicates the minimum volume (muted status).
+        The volume adjustment takes effect simultaneously in the audio-left and audio-right channels.
+        The recommended volume range is [+10, +56].
+        Within this range, the noises are lowest because only the analog gain is adjusted,
+        and the voice quality can be guaranteed.
+        *******************************************************************************************/
+        iAcodecInputVol = 30;
+        if (ioctl(fdAcodec, ACODEC_SET_INPUT_VOL, &iAcodecInputVol))
+        {
+            printf("%s: set acodec micin volume failed\n", __FUNCTION__);
+            return HI_FAILURE;
+        }
 
-    /*灵敏度*/
-	unsigned int gain_mic;
-	//gain_mic = 0x07;
-	//Hi3516A 的 arg 取值范围为[0, 31]，按 1.5db 递增， 0 对应最小增益-16.5db， 31 对应最大增益 30db
-     //gain_mic = g_cdr_systemconfig.volumeRecordingSensitivity*10;//[0 3]
-     gain_mic = g_cdr_systemconfig.volumeRecordingSensitivity*5;//[0 3]
-	if (ioctl(fdAcodec, ACODEC_SET_GAIN_MICL, &gain_mic))
-	{
-		printf("ioctl err!\n");
-	}
-
-	//unsigned int gain_mac;
-	//gain_mic = 0x07;
-	//gain_mic = g_cdr_systemconfig.volumeRecordingSensitivity*10;//[0 3]
-	if (ioctl(fdAcodec, ACODEC_SET_GAIN_MICR, &gain_mic))
-	{
-		printf("ioctl err!\n");
-	}
-
-	int iVolIn = 45;
-	if (ioctl(fdAcodec, ACODEC_SET_INPUT_VOL, &iVolIn))
-	{
-		printf("ioctl err!\n");
-	}
-
-	int iVol;
-     iVol = g_cdr_systemconfig.volume;
-     
-     if(iVol!=0x00){
-         iVol = (iVol+1)/2 + 49 ;// [0 99]
-         iVol = iVol - 93;//[-93 6]
-     }else{
-        iVol = -121;
-     }
-
-     printf("=================iVol:%d\n",iVol);
-     
-	if (ioctl(fdAcodec, ACODEC_SET_OUTPUT_VOL, &iVol))
-	{
-		printf("ioctl err!\n");
-	}
-
-	ACODEC_VOL_CTRL vol_ctrl;
-    unsigned char ucVolMuteFlag = g_cdr_systemconfig.volume;
-    vol_ctrl.vol_ctrl_mute = 0x0;
-    if(ucVolMuteFlag == 0x00)	vol_ctrl.vol_ctrl_mute = 0x1;//静音
-	vol_ctrl.vol_ctrl = 0x00;
-	if (ioctl(fdAcodec, ACODEC_SET_DACL_VOL, &vol_ctrl))
-	{
-		printf("ioctl err!\n");
-	}
-	
-	if (ioctl(fdAcodec, ACODEC_SET_DACR_VOL, &vol_ctrl))
-	{
-		printf("ioctl err!\n");
-	}
-	    
+    }
+    
     close(fdAcodec);
     return ret;
 }
@@ -477,7 +433,6 @@ HI_S32 SAMPLE_COMM_AUDIO_CfgAcodec(AIO_ATTR_S *pstAioAttr)
 {
     HI_S32 s32Ret = HI_SUCCESS;
     HI_BOOL bCodecCfg = HI_FALSE;
-
 
     #ifdef HI_ACODEC_TYPE_INNER
     /*** INNER AUDIO CODEC ***/
@@ -683,9 +638,7 @@ void *SAMPLE_COMM_AUDIO_AencProc(void *parg)
                     return NULL;
                 }
             }
-
-			printf("%s stStream.u32Len:%d\r\n",__FUNCTION__,stStream.u32Len);
-			
+            
             /* save audio stream to file */
             fwrite(stStream.pStream,1,stStream.u32Len, pstAencCtl->pfd);
             fflush(pstAencCtl->pfd);
@@ -898,7 +851,7 @@ HI_S32 SAMPLE_COMM_AUDIO_CreatTrdAencAdec(AENC_CHN AeChn, ADEC_CHN AdChn, FILE *
     pstAenc = &gs_stSampleAenc[AeChn];
     pstAenc->AeChn = AeChn;
     pstAenc->AdChn = AdChn;
-    pstAenc->bSendAdChn = HI_FALSE;
+    pstAenc->bSendAdChn = HI_TRUE;
     pstAenc->pfd = pAecFd;    
     pstAenc->bStart = HI_TRUE;    
     pthread_create(&pstAenc->stAencPid, 0, SAMPLE_COMM_AUDIO_AencProc, pstAenc);
@@ -1358,35 +1311,6 @@ HI_S32 SAMPLE_COMM_AUDIO_StartAo(AUDIO_DEV AoDevId, HI_S32 s32AoChnCnt,
         return HI_FAILURE;
     }
 
-
-	
-#if 1
-	
-		AUDIO_TRACK_MODE_E enTrackMode = AUDIO_TRACK_MIX;
-		AUDIO_TRACK_MODE_E temp;
-		s32Ret = HI_MPI_AO_SetTrackMode(AoDevId, enTrackMode);
-		if (HI_SUCCESS != s32Ret)
-		{
-			printf("Ao set track mode failure! AoDev: %d, enTrackMode: %d, s32Ret:0x%x.\n", AoDevId, enTrackMode, s32Ret);
-			return s32Ret;
-		}
-		s32Ret = HI_MPI_AO_GetTrackMode(AoDevId, &temp);
-		if (HI_SUCCESS != s32Ret)
-		{
-			printf("Ao get track mode failure! AoDev: %d, s32Ret: 0x%x.\n", AoDevId,s32Ret);
-			return s32Ret;
-		}
-		printf("HI_MPI_AO_GetTrackMode:%d\r\n",temp);
-
-		s32Ret = HI_MPI_AO_SetVolume( AoDevId, 6);
-		if(HI_SUCCESS != s32Ret)
-		{
-			printf("%s: HI_MPI_AO_SetVolume(%d), failed with %#x!\n",\
-			__FUNCTION__, AoDevId, s32Ret);
-		}			
-		
-#endif	
-
 	for (i=0; i<s32AoChnCnt; i++)
     {
         s32Ret = HI_MPI_AO_EnableChn(AoDevId, i/(pstAioAttr->enSoundmode + 1));
@@ -1524,16 +1448,6 @@ HI_S32 SAMPLE_COMM_AUDIO_StartAenc(HI_S32 s32AencChnCnt, HI_U32 u32AencPtNumPerF
     else if (PT_LPCM == stAencAttr.enType)
     {
         stAencAttr.pValue = &stAencLpcm;
-    }
-	else if(PT_AAC == stAencAttr.enType)
-	{
-	    AENC_ATTR_AAC_S stAencAac;
-        stAencAttr.pValue = &stAencAac;
-        stAencAac.enAACType = gs_enAacType;
-        stAencAac.enBitRate = gs_enAacBps;
-        stAencAac.enBitWidth = AUDIO_BIT_WIDTH_16;
-        stAencAac.enSmpRate = AUDIO_SAMPLE_RATE_16000;
-        stAencAac.enSoundMode = AUDIO_SOUND_MODE_MONO;
     }
     else
     {
