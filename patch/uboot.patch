@@ -1,0 +1,85 @@
+diff -Nur u-boot-2010.06/include/configs/hi3516cv200.h u-boot-2010.06_kaka/include/configs/hi3516cv200.h
+--- u-boot-2010.06/include/configs/hi3516cv200.h	2016-04-14 15:08:42.000000000 +0800
++++ u-boot-2010.06_kaka/include/configs/hi3516cv200.h	2017-02-18 11:21:56.000000000 +0800
+@@ -140,9 +140,14 @@
+ /*-----------------------------------------------------------------------
+  *  Environment   Configuration
+  *-----------------------------------------------------------------------*/
+-#define CONFIG_BOOTCOMMAND "bootm 0x82000000"
++//#define CONFIG_BOOTCOMMAND "bootm 0x82000000"
++//setenv bootcmd 'sf probe 0;sf read 0x82000000 0x100000 0x300000;bootm 0x82000000'
++#define CONFIG_BOOTCOMMAND "sf probe 0;sf read 0x82000000 0x100000 0x300000;bootm 0x82000000"
++
+ #define CONFIG_BOOTDELAY	1
+-#define CONFIG_BOOTARGS "mem=96M console=ttyAMA0,115200"
++//#define CONFIG_BOOTARGS "mem=96M console=ttyAMA0,115200"
++#define CONFIG_BOOTARGS "mem=160M console=ttyAMA0,115200 root=/dev/mtdblock3 rootfstype=jffs2 mtdparts=hi_sfc:1M(boot),2688K(kernel),384K(cfg),12M(rootfs)"
++
+ #define CONFIG_NETMASK  255.255.255.0       /* talk on MY local net */
+ #define CONFIG_IPADDR   192.168.1.10        /* static IP I currently own */
+ #define CONFIG_SERVERIP 192.168.1.2     /* current IP of tftp server ip */
+@@ -270,10 +275,10 @@
+ /*-----------------------------------------------------------------------
+  * sdcard or usb storage system update
+  * ----------------------------------------------------------------------*/
+-/* #define CONFIG_AUTO_UPDATE			1 */
++#define CONFIG_AUTO_UPDATE			1 
+ #ifdef CONFIG_AUTO_UPDATE
+ 	#define CONFIG_AUTO_SD_UPDATE		1
+-	#define CONFIG_AUTO_USB_UPDATE		1
++	#define CONFIG_AUTO_USB_UPDATE		0
+ #endif
+ 
+ /* #define __LITTLE_ENDIAN				1 */
+diff -Nur u-boot-2010.06/product/hiupdate/auto_update.c u-boot-2010.06_kaka/product/hiupdate/auto_update.c
+--- u-boot-2010.06/product/hiupdate/auto_update.c	2016-04-14 15:08:42.000000000 +0800
++++ u-boot-2010.06_kaka/product/hiupdate/auto_update.c	2017-04-11 12:12:20.419520239 +0800
+@@ -62,9 +62,9 @@
+ #endif	/* AU_DEBUG */
+ 
+ /* possible names of files on the medium. */
+-#define AU_FIRMWARE	"u-boot"
+-#define AU_KERNEL	"kernel"
+-#define AU_ROOTFS	"rootfs"
++#define AU_FIRMWARE	"/cdrfcimage/u-boot"
++#define AU_KERNEL	"/cdrfcimage/kernel"
++#define AU_ROOTFS	"/cdrfcimage/rootfs"
+ 
+ struct flash_layout {
+ 	long start;
+@@ -90,11 +90,11 @@
+ 
+ /* layout of the FLASH. ST = start address, ND = end address. */
+ #define AU_FL_FIRMWARE_ST	0x0
+-#define AU_FL_FIRMWARE_ND	0x7FFFF
++#define AU_FL_FIRMWARE_ND	0xFFFFF
+ #define AU_FL_KERNEL_ST		0x100000
+-#define AU_FL_KERNEL_ND		0x5FFFFF
+-#define AU_FL_ROOTFS_ST		0x600000
+-#define AU_FL_ROOTFS_ND		0xbFFFFF
++#define AU_FL_KERNEL_ND		0x3FFFFF
++#define AU_FL_ROOTFS_ST		0x400000
++#define AU_FL_ROOTFS_ND		0xFFFFFF
+ 
+ static int au_stor_curr_dev; /* current device */
+ 
+@@ -110,7 +110,7 @@
+ char *aufile[AU_MAXFILES] = {
+ 	AU_FIRMWARE,
+ 	AU_KERNEL,
+-	AU_ROOTFS
++	AU_ROOTFS,
+ };
+ 
+ /* sizes of flash areas for each file */
+@@ -576,7 +576,9 @@
+ 	/*
+ 	 * If u-boot has been updated, it's better to save environment to flash
+ 	 */
+-	if (1 == state) {
++	if (1 == state)
++	{
++		set_default_env();		
+ 		env_crc_update();
+ 		saveenv();
+ 	}

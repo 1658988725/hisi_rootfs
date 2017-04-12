@@ -1,0 +1,71 @@
+通过补丁更新kernel功能：
+
+1.补丁支持exfat驱动
+
+补丁流程：
+
+A.把kernel.patch copy到kernel目录
+B.进入kernel代码目录，执行patch -p1 < kernel.patch打补丁；
+
+ll@ubuntu:~/work/hisi/Hi3518E_SDK_V1.0.3.0/osdrv/opensource/kernel$ ls -lh
+total 102M
+-rw-rw-r--  1 ll ll 424K Apr 11 14:43 kernel.patch
+drwxr-xr-x 23 ll ll 4.0K Apr 11 14:39 linux-3.4.y
+-rw-rw-r--  1 ll ll 102M May 20  2016 linux-3.4.y.tgz
+ll@ubuntu:~/work/hisi/Hi3518E_SDK_V1.0.3.0/osdrv/opensource/kernel$ cd linux-3.4.y/
+
+ll@ubuntu:~/work/hisi/Hi3518E_SDK_V1.0.3.0/osdrv/opensource/kernel/linux-3.4.y$ patch -p1 < ../kernel.patch 
+patching file fs/exfat/dkms.conf
+patching file fs/exfat/exfat_api.c
+patching file fs/exfat/exfat_api.h
+patching file fs/exfat/exfat_bitmap.c
+patching file fs/exfat/exfat_bitmap.h
+patching file fs/exfat/exfat_blkdev.c
+patching file fs/exfat/exfat_blkdev.h
+patching file fs/exfat/exfat_cache.c
+patching file fs/exfat/exfat_cache.h
+patching file fs/exfat/exfat_config.h
+patching file fs/exfat/exfat_core.c
+patching file fs/exfat/exfat_core.h
+patching file fs/exfat/exfat_data.c
+patching file fs/exfat/exfat_data.h
+patching file fs/exfat/exfat_nls.c
+patching file fs/exfat/exfat_nls.h
+patching file fs/exfat/exfat_oal.c
+patching file fs/exfat/exfat_oal.h
+patching file fs/exfat/exfat_super.c
+patching file fs/exfat/exfat_super.h
+patching file fs/exfat/exfat_upcase.c
+patching file fs/exfat/exfat_version.h
+patching file fs/exfat/.git/config
+patching file fs/exfat/.git/description
+patching file fs/exfat/.git/HEAD
+patching file fs/exfat/.git/hooks/applypatch-msg.sample
+patching file fs/exfat/.git/hooks/commit-msg.sample
+patching file fs/exfat/.git/hooks/post-update.sample
+patching file fs/exfat/.git/hooks/pre-applypatch.sample
+patching file fs/exfat/.git/hooks/pre-commit.sample
+patching file fs/exfat/.git/hooks/prepare-commit-msg.sample
+patching file fs/exfat/.git/hooks/pre-push.sample
+patching file fs/exfat/.git/hooks/pre-rebase.sample
+patching file fs/exfat/.git/hooks/update.sample
+patching file fs/exfat/.git/info/exclude
+patching file fs/exfat/.git/logs/HEAD
+patching file fs/exfat/.git/logs/refs/heads/master
+patching file fs/exfat/.git/logs/refs/remotes/origin/HEAD
+patching file fs/exfat/.git/packed-refs
+patching file fs/exfat/.git/refs/heads/master
+patching file fs/exfat/.git/refs/remotes/origin/HEAD
+patching file fs/exfat/.gitignore
+patching file fs/exfat/Kconfig
+patching file fs/exfat/LICENSE
+patching file fs/exfat/Makefile
+patching file fs/exfat/README.md
+patching file fs/Kconfig
+patching file fs/Makefile
+ll@ubuntu:~/work/hisi/Hi3518E_SDK_V1.0.3.0/osdrv/opensource/kernel/linux-3.4.y$ 
+
+
+
+
+3.在make menuconfig 里面添加exfat支持即可.
