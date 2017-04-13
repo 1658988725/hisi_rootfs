@@ -394,6 +394,113 @@ void SAMPLE_AUDIO_HandleSig(HI_S32 signo)
 
 #endif
 
+int Set_VolumeCtrl(int iValueIndex)
+{
+
+    g_cdr_systemconfig.volume = iValueIndex;
+    
+     //理论范围[-121, 6] 
+     //测试有效范围  [40-93, 99-93]
+    if(iValueIndex != 0x00){
+       iValueIndex = (iValueIndex+1)/2 + 49 ;// [0 99]
+       iValueIndex = iValueIndex - 93;//[-93 6]
+    }else{
+       iValueIndex = -121;
+    }
+    
+    int   fdAcodec = open(ACODEC_FILE, O_RDWR);
+    if (fdAcodec < 0)
+    {
+        printf("%s: can't open Acodec,%s\n", __FUNCTION__, ACODEC_FILE);
+        return HI_FAILURE;
+    }
+ 
+    	if (ioctl(fdAcodec, ACODEC_SET_OUTPUT_VOL, &iValueIndex))
+	{
+		printf("ioctl err!\n");
+	} 
+    
+    close(fdAcodec);
+
+    //Set_AI_MuteVolume(0x01);
+    
+   return 0;
+}
+
+
+//参数ai ucVolMuteFlag 0表示静音，为1开启音频
+int Set_AI_MuteVolume(unsigned char ucVolMuteFlag)
+{
+    
+	ACODEC_VOL_CTRL vol_ctrl;
+    
+    int   fdAcodec = open(ACODEC_FILE, O_RDWR);
+    if (fdAcodec < 0)
+    {
+        printf("%s: can't open Acodec,%s\n", __FUNCTION__, ACODEC_FILE);
+        return HI_FAILURE;
+    }
+    
+    vol_ctrl.vol_ctrl_mute = 0x0;
+    if(ucVolMuteFlag == 0x00)	vol_ctrl.vol_ctrl_mute = 0x1;//静音
+	vol_ctrl.vol_ctrl = 0x00;
+	if (ioctl(fdAcodec, ACODEC_SET_ADCL_VOL, &vol_ctrl))//左声道输出音量控制
+	{
+		printf("ioctl err!\n");
+	}
+	
+	if (ioctl(fdAcodec, ACODEC_SET_ADCR_VOL, &vol_ctrl))
+	{
+		printf("ioctl err!\n");
+	}
+
+    close(fdAcodec);
+    return 0;
+}
+
+int Set_VolumeRecordingSensitivity(int iIndex)
+{
+    int fdAcodec = open(ACODEC_FILE, O_RDWR);
+    if (fdAcodec < 0)
+    {
+        printf("%s: can't open Acodec,%s\n", __FUNCTION__, ACODEC_FILE);
+        return HI_FAILURE;
+    }
+    
+    g_cdr_systemconfig.volumeRecordingSensitivity = iIndex;		 
+
+	//Hi3518EV200/Hi3519V100 的模拟增益范围为[0, 16]，其中 0 到 15 按 2db 递增，0
+	//对应 0db，15 对应最大增益 30db，而 16 对应的是-1.5db。
+	
+	unsigned int gain_mic = 16;
+     
+    if (ioctl(fdAcodec, ACODEC_SET_GAIN_MICL, &gain_mic))
+	{
+		printf("%s %d ioctl err!\n",__FUNCTION__,__LINE__);
+	}
+
+	if (ioctl(fdAcodec, ACODEC_SET_GAIN_MICR, &gain_mic))
+	{
+		printf("%s %d ioctl err!\n",__FUNCTION__,__LINE__);
+	} 
+
+	unsigned int adc_hpf;
+	adc_hpf = 0x1;
+	if (ioctl(fdAcodec, ACODEC_SET_ADC_HP_FILTER, &adc_hpf))
+	{
+		printf("%s %d ioctl err!\n",__FUNCTION__,__LINE__);
+	}
+
+
+    close(fdAcodec);
+
+	gain_mic = g_cdr_systemconfig.volumeRecordingSensitivity*5;
+	if(gain_mic == 0x00)Set_AI_MuteVolume(0x00);
+	else Set_AI_MuteVolume(0x01);
+  
+	return 0;
+}
+
 /******************************************************************************
 * function : main
 ******************************************************************************/
@@ -410,10 +517,10 @@ HI_S32 cdr_audioInit(void)
 
     ret = cdr_AUDIO_AiAencAo();
 
-
-    //Set_VolumeCtrl(g_cdr_systemconfig.volume);
+    printf("g_cdr_systemconfig.volume:%d\n",g_cdr_systemconfig.volume);
+    Set_VolumeCtrl(g_cdr_systemconfig.volume);
     //Set_VolumeRecordingSensitivity(g_cdr_systemconfig.volumeRecordingSensitivity);
-    
+    //sleep(2);
 
 	return ret;   
 }

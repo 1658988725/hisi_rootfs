@@ -85,9 +85,10 @@ typedef socklen_t SOCKLEN;
 #define SD_MOUNT_PATH "/mnt/mmc/"
 #define CDR_CUTMP4_EX_TIME 5
 
-#define CDR_FW_VERSION "vs.2.1-11"
+#define CDR_FW_VERSION "vs.2.1-18"
 #define CDR_HW_VERSION "vh.1.1"
 
+#define AUDIO_SAMPLE_RATE  8000 
 #define CDR_AUDIO_BOOTVOICE		0
 #define CDR_AUDIO_IMAGECAPUTER 	1
 #define CDR_AUDIO_NOSD 			3

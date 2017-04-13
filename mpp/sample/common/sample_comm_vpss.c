@@ -169,7 +169,9 @@ HI_S32 SAMPLE_COMM_VPSS_EnableChn(VPSS_GRP VpssGrp, VPSS_CHN VpssChn,
             return HI_FAILURE;
         }     
     }
-    
+
+
+	
     s32Ret = HI_MPI_VPSS_EnableChn(VpssGrp, VpssChn);
     if (s32Ret != HI_SUCCESS)
     {
@@ -177,6 +179,15 @@ HI_S32 SAMPLE_COMM_VPSS_EnableChn(VPSS_GRP VpssGrp, VPSS_CHN VpssChn,
         return HI_FAILURE;
     }
 
+#if 0
+    s32Ret = HI_MPI_VPSS_SetRotate(VpssGrp, VpssChn,ROTATE_180);
+    if (s32Ret != HI_SUCCESS)
+    {
+        SAMPLE_PRT("HI_MPI_VPSS_SetRotate failed with %#x\n", s32Ret);
+        return HI_FAILURE;
+    }
+	
+#endif
     return HI_SUCCESS;
 }
 

@@ -541,7 +541,7 @@ int cdr_get_user_passwd(char *pucUserPasswd)
     char ucUserPasswdTemp[60] = {0x00};
 
     sprintf(ucUserPasswdTemp,"username:%s&passwd:%s",g_cdr_systemconfig.name,g_cdr_systemconfig.password);  //"username:EKAKA1&passwd:1234567"
-    memcpy(pucUserPasswd,ucUserPasswdTemp,strlen(ucUserPasswdTemp));
+    memcpy(pucUserPasswd,ucUserPasswdTemp,strlen(ucUserPasswdTemp)+1);
 	
     return 0;
 }
@@ -550,15 +550,8 @@ int cdr_get_user_passwd(char *pucUserPasswd)
 void app_cmd_login(int clientIndex)
 {
     char ucUserPasswd[60] = {0x00};
-    char ucUserPasswd2[60]= {0x00};;
-
-
     cdr_get_user_passwd(ucUserPasswd);
-
-    strncpy(ucUserPasswd2,(char *)&g_appclients[clientIndex].proRecvBuffer.MsgBody, strlen(ucUserPasswd));
-
-	//if(strncmp(USERNAMEANDPASSWD,&g_appclients[clientIndex].proRecvBuffer.MsgBody,strlen(USERNAMEANDPASSWD)) == 0)
-    if(strncmp(ucUserPasswd,(char *)&g_appclients[clientIndex].proRecvBuffer.MsgBody,strlen(ucUserPasswd)) == 0)
+	if(strncmp(ucUserPasswd,(char *)&g_appclients[clientIndex].proRecvBuffer.MsgBody,strlen(ucUserPasswd)+1)== 0)
 	{
 		//µÇÂ¼³É¹¦
 		g_appclients[clientIndex].loginflag = 1;
@@ -2354,14 +2347,16 @@ int cdr_syscfg_set_pro_impl(char *pRoot,char *pChildNode,char *pValue,int childf
 
 
 	if(strcmp("name",pRoot) == 0x00)
-	{
+	{ 
+         printf("pValue:%s\n",pValue);
 		memset(g_cdr_systemconfig.name,0x00,256);
-		memcpy(g_cdr_systemconfig.name,pValue,strlen(pValue));
+		memcpy(g_cdr_systemconfig.name,pValue,strlen(pValue)+1);
 	}
 	if(strcmp("password",pRoot) == 0x00)
 	{
+         printf("pValue:%s\n",pValue);
 		memset(g_cdr_systemconfig.password,0x00,256);
-		memcpy(g_cdr_systemconfig.password,pValue,strlen(pValue));
+		memcpy(g_cdr_systemconfig.password,pValue,strlen(pValue)+1);
 	}
 			
     if(strcmp("volumeRecordingSensitivity",pRoot) == 0x00)
@@ -2372,6 +2367,7 @@ int cdr_syscfg_set_pro_impl(char *pRoot,char *pChildNode,char *pValue,int childf
     if(strcmp("volume",pRoot)==0)
 	{
 	   iValue = atoi(pValue);
+       printf("volume iValue:%d\n",iValue);
        Set_VolumeCtrl(iValue);
        //HI_MPI_AO_SetVolume();
     }

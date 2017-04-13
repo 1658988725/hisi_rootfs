@@ -1,7 +1,7 @@
 include ../Makefile.param
 ####SENSOR_TYPE ?= SONY_IMX122_DC_1080P_30FPS
 
-TARGET      = cdr_bootvoice
+TARGET      = bootvoice
 OBJPATH     = .
 SOURCES     = $(wildcard *.c ./audio/*.c ./comm/*.c) 
 

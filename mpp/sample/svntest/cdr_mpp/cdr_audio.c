@@ -110,7 +110,7 @@ HI_S32 cdr_AUDIO_AiAencAo(HI_VOID)
 	AI_VQE_CONFIG_S stAiVqeAttr;	
 	HI_VOID     *pAiVqeAttr = NULL;
 
-    stAioAttr.enSamplerate   = AUDIO_SAMPLE_RATE_16000;
+    stAioAttr.enSamplerate   = AUDIO_SAMPLE_RATE_8000;
     stAioAttr.enBitwidth     = AUDIO_BIT_WIDTH_16;
     stAioAttr.enWorkmode     = AIO_MODE_I2S_MASTER;
     stAioAttr.enSoundmode    = AUDIO_SOUND_MODE_MONO;
@@ -131,7 +131,7 @@ HI_S32 cdr_AUDIO_AiAencAo(HI_VOID)
 	
 	if (1 == u32AiVqeType)
     {
-	    stAiVqeAttr.s32WorkSampleRate    = AUDIO_SAMPLE_RATE_16000;
+	    stAiVqeAttr.s32WorkSampleRate    = AUDIO_SAMPLE_RATE_8000;
     	stAiVqeAttr.s32FrameSample       = AUDIO_PTNUMPERFRM;
     	stAiVqeAttr.enWorkstate          = VQE_WORKSTATE_NOISY;
     	stAiVqeAttr.bAecOpen             = HI_TRUE;
@@ -307,7 +307,8 @@ HI_S32 cdr_audioInit(void)
 
     ret = cdr_AUDIO_AiAencAo();
 
-
+    printf("g_cdr_systemconfig.volume:%d\n",g_cdr_systemconfig.volume);
+    printf("g_cdr_systemconfig.volumeRecordingSensitivity:%d\n",g_cdr_systemconfig.volumeRecordingSensitivity);
     Set_VolumeCtrl(g_cdr_systemconfig.volume);
     Set_VolumeRecordingSensitivity(g_cdr_systemconfig.volumeRecordingSensitivity);
     

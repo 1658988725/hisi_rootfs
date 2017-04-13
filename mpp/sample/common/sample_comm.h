@@ -52,6 +52,9 @@ extern "C"{
 #endif
 #endif /* End of #ifdef __cplusplus */
 
+
+#define ACODEC_FILE     "/dev/acodec"
+
 /*******************************************************
     macro define 
 *******************************************************/
@@ -161,6 +164,7 @@ do{\
 #define CHIP_HI3518E_V200   0x3518E200
 #define CHIP_HI3518E_V201   0x3518E201
 
+#define CHIP_ID CHIP_HI3516C_V200
 #if (CHIP_ID == CHIP_HI3516C_V200)
     #define VB_CNT  8
 #elif (CHIP_ID == CHIP_HI3518E_V200)

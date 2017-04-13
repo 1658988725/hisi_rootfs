@@ -379,7 +379,7 @@ int InitAccEncoder(Mp4Context *p)
 {
 	if(!p) return -1;
 
-	p->oAudioCfg.nSampleRate = 16000;
+	p->oAudioCfg.nSampleRate = AUDIO_SAMPLE_RATE;
 	p->oAudioCfg.nChannels = 2;
 	p->oAudioCfg.nPCMBitSize = 16;
 	p->oAudioCfg.nInputSamples = 1024;
@@ -410,7 +410,7 @@ int cdr_create_mp4file(char *pFileName,int timelen)
 	pMp4Context->nlen = timelen/1000;   
 	pMp4Context->nNeedAudio= 1;
 
-	pMp4Context->oAudioCfg.nSampleRate = 16000;
+	pMp4Context->oAudioCfg.nSampleRate = AUDIO_SAMPLE_RATE;
 	pMp4Context->oAudioCfg.nChannels = 2;
 	pMp4Context->oAudioCfg.nPCMBitSize = 16;
 	pMp4Context->oAudioCfg.nInputSamples = 1024;

@@ -158,7 +158,7 @@ void mp4dirstreamcut(void* pAgs)
 	MP4_FRAME *pFrame;
 
 	int totalFrame = ((p->nTotalLen) * (p->oMp4Info->nframerate));
-	int atotalFrame = (p->nTotalLen) * 16000/1024.0;
+	int atotalFrame = (p->nTotalLen) * AUDIO_SAMPLE_RATE/1024.0;
     
 	if(p->pStreamcb == NULL) 
 	{
@@ -257,7 +257,7 @@ void mp4dirstreamcut(void* pAgs)
 
 	
 	memcpy(pMp4Info,p->oMp4Info,sizeof(Mp4Info));
-	nReadIndex = (nVFrameStart/30.0) * 16000/1024.0;	
+	nReadIndex = (nVFrameStart/30.0) * AUDIO_SAMPLE_RATE/1024.0;	
 	//printf("nReadIndex = %d nVFrameStart = %d\n",nReadIndex,nVFrameStart);
 
 	// 如果是下一个文件就直接切换.	

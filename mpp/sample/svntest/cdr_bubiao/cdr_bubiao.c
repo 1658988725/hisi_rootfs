@@ -929,17 +929,8 @@ void cdr_ftp_upload_process_ex(char *file_name,void *pUserData)
 	  iResult = cdr_ftp_upload(p->sTatoiResultPackageBuf.sAreaMediaUploadAttrBody.ucUploadURL,
 	    (unsigned char*)file_name,p->pBBUploadInfoHeader,&p->sTatoiResultPackageBuf);
 	}
-	/*
-	else{
-	 //printf("停止上传指令\n");
-	 iResult = cdr_stop_ftp_upload();//3：停止成功；4：停止失败
-	} 
-	*/	
-	
-	//printf("上传结果 iResult:%d\n",iResult);
 	p->sTatoiResultPackageBuf.sKakaAckPack.ucResult = iResult;
 	AckToPlatform(p->pBBUploadInfoHeader,p->sTatoiResultPackageBuf);
-
 }
 
 

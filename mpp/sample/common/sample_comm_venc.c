@@ -718,6 +718,7 @@ HI_S32 SAMPLE_COMM_VENC_SaveSnap(VENC_STREAM_S *pstStream, HI_BOOL bSaveJpg, HI_
 HI_S32 SAMPLE_COMM_VENC_SaveStream(PAYLOAD_TYPE_E enType,FILE *pFd, VENC_STREAM_S *pstStream)
 {
     HI_S32 s32Ret;
+	//return HI_SUCCESS;
 
     if (PT_H264 == enType)
     {
@@ -806,13 +807,17 @@ HI_S32 SAMPLE_COMM_VENC_Start(VENC_CHN VencChn, PAYLOAD_TYPE_E enType, VIDEO_NOR
 
                   case PIC_D1:
                   case PIC_VGA:	   /* 640 * 480 */
-                	   stH264Cbr.u32BitRate = 1024*2;
+                	   //stH264Cbr.u32BitRate = 1024*2;
+                     //stH264Cbr.u32BitRate = 512;
+                     //stH264Cbr.u32BitRate = 256;
+                     stH264Cbr.u32BitRate = 1024;
                        break;
                   case PIC_HD720:   /* 1280 * 720 */
                 	   stH264Cbr.u32BitRate = 1024*2;
                 	   break;
                   case PIC_HD1080:  /* 1920 * 1080 */
-                  	   stH264Cbr.u32BitRate = 1024*4;
+                  	   stH264Cbr.u32BitRate = 1024*8;
+                  	   //stH264Cbr.u32BitRate = 1024*2;
                 	   break;
                   case PIC_5M:  /* 2592 * 1944 */
                   	   stH264Cbr.u32BitRate = 1024*8;
@@ -1096,6 +1101,7 @@ HI_S32 SAMPLE_COMM_VENC_Start(VENC_CHN VencChn, PAYLOAD_TYPE_E enType, VIDEO_NOR
         }
         break;
         default:
+			SAMPLE_PRT("HI_ERR_VENC_NOT_SUPPORT\r\n");
             return HI_ERR_VENC_NOT_SUPPORT;
     }
 
@@ -1403,6 +1409,8 @@ HI_VOID* SAMPLE_COMM_VENC_GetVencStreamProc(HI_VOID *p)
 
         /* Set Venc Fd. */
         VencFd[i] = HI_MPI_VENC_GetFd(i);
+
+		printf("%s %d -- VencFd[%d]:%d\r\n",__FUNCTION__,__LINE__,i,VencFd[i]);
         if (VencFd[i] < 0)
         {
             SAMPLE_PRT("HI_MPI_VENC_GetFd failed with %#x!\n", 

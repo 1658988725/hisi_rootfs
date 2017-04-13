@@ -308,7 +308,6 @@ HI_S32 SAMPLE_COMM_SYS_MemConfig(HI_VOID)
             SAMPLE_PRT("HI_MPI_SYS_SetMemConf ERR !\n");
             return HI_FAILURE;
         }
-
     }
         
     /*config memory for vo*/
